@@ -1,0 +1,66 @@
+ private void sendVerificationCode(String mobile_number) {
+        PhoneAuthProvider.getInstance().verifyPhoneNumber(mobile_number, 60, TimeUnit.SECONDS,
+                OtpConfirmation.this, mCallback);
+    }
+
+PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallback = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+
+      @Override
+      public void onVerificationCompleted(PhoneAuthCredential phoneAuthCredential) {
+          if (progressDialog != null)
+              progressDialog.dismiss();
+      }
+
+      @Override
+      public void onVerificationFailed(FirebaseException e) {
+          if (e instanceof FirebaseAuthInvalidCredentialsException) {
+              Toast.makeText(OtpConfirmation.this, "invalid credentials", Toast.LENGTH_SHORT).show();
+          } else if (e instanceof FirebaseTooManyRequestsException) {
+              Intent inbox = new Intent(OtpConfirmation.this, FirstScreen.class);
+
+              SharedPreferences shp1 = getSharedPreferences("session", MODE_PRIVATE);
+              SharedPreferences.Editor edt1 = shp1.edit();
+              edt1.putString("msg", "1");
+              edt1.commit();
+              CT.cancel();
+              finish();
+              startActivity(inbox);
+
+          }
+          if (progressDialog != null)
+              progressDialog.dismiss();
+      }
+
+      @Override
+      public void onCodeSent(String s, PhoneAuthProvider.ForceResendingToken forceResendingToken) {
+          super.onCodeSent(s, forceResendingToken);
+          verificationCode = s;
+          if (progressDialog != null)
+              progressDialog.dismiss();
+          Toast.makeText(OtpConfirmation.this, "Code sent", Toast.LENGTH_SHORT).show();
+      }
+  };
+
+  private void SigninWithPhone(PhoneAuthCredential credential) {
+      auth.signInWithCredential(credential)
+              .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                  @Override
+                  public void onComplete(@NonNull Task<AuthResult> task) {
+                      if (task.isSuccessful()) {
+                          Intent inbox = new Intent(OtpConfirmation.this, FirstScreen.class);
+
+                          SharedPreferences shp1 = getSharedPreferences("session", MODE_PRIVATE);
+                          SharedPreferences.Editor edt1 = shp1.edit();
+                          edt1.putString("msg", sb.toString().trim());
+                          //edt1.putString("msg", Enter_OTP.getText().toString().trim());
+                          edt1.commit();
+                          CT.cancel();
+                          finish();
+                          //Toast.makeText(OtpConfirmation.this, "OTP Registered Successfully......" + message, Toast.LENGTH_SHORT).show();
+                          startActivity(inbox);
+                      } else {
+                          Toast.makeText(OtpConfirmation.this, "Incorrect OTP", Toast.LENGTH_SHORT).show();
+                      }
+                  }
+              });
+  }
