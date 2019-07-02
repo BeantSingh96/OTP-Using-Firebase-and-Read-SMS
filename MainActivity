@@ -1,3 +1,15 @@
+//on btn click
+btn_confirm.setOnClickListener(new View.OnClickListener() {
+    @Override
+    public void onClick(View view) {
+        if (verificationCode != null) {
+            PhoneAuthCredential credential = PhoneAuthProvider.getCredential(verificationCode, sb.toString());
+            SigninWithPhone(credential);
+        }
+    }
+});
+
+
  private void sendVerificationCode(String mobile_number) {
         PhoneAuthProvider.getInstance().verifyPhoneNumber(mobile_number, 60, TimeUnit.SECONDS,
                 OtpConfirmation.this, mCallback);
@@ -41,6 +53,7 @@ PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallback = new PhoneAuthP
       }
   };
 
+// signup After code
   private void SigninWithPhone(PhoneAuthCredential credential) {
       auth.signInWithCredential(credential)
               .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -64,3 +77,32 @@ PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallback = new PhoneAuthP
                   }
               });
   }
+
+
+//receive OTP with interface
+ SmsReceiver.bindListener(new OTPListener() {
+            @Override
+            public void onOTPReceived(String extractedOTP) {
+                Toast.makeText(OtpConfirmation.this, extractedOTP, Toast.LENGTH_SHORT).show();
+                addCodeToEditText(extractedOTP);
+            }
+        });
+
+//unbind listener
+ @Override
+    protected void onDestroy() {
+        SmsReceiver.unbindListener();
+        super.onDestroy();
+        CT.cancel();
+    }
+
+//set OTP into edittext
+ private void addCodeToEditText(String messageText) {
+       //if i can't use String.valueOf then app crashes
+       et1.setText(String.valueOf(messageText.charAt(0)));
+       et2.setText(String.valueOf(messageText.charAt(1)));
+       et3.setText(String.valueOf(messageText.charAt(2)));
+       et4.setText(String.valueOf(messageText.charAt(3)));
+       et5.setText(String.valueOf(messageText.charAt(4)));
+       et6.setText(String.valueOf(messageText.charAt(5)));
+   }
