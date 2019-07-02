@@ -1,0 +1,4 @@
+public interface OTPListener {
+    void onOTPReceived(String messageText);
+}
+
